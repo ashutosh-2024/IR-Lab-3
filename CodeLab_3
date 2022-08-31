@@ -1,0 +1,99 @@
+import re
+import matplotlib.pyplot as plt
+import numpy as np
+import array as arr
+import pandas as pd
+import json 
+import os
+import seaborn as sns
+import nltk
+from collections import Counter
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
+porter = PorterStemmer()
+# nltk.download('stopwords')
+# stop_words=set(stopwords.words("english"))
+
+
+# In[2]:
+
+
+# class cran1400n:
+
+
+# In[10]:
+
+
+class cran1400:
+    def booleanRet(self,cndn,key1,key2):
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            print("The list of documents which satisfy query are : ")
+            for w in doc_list:
+                    temp = w.split(" ")
+                    wordSet={""}
+                    for t in temp:
+                        wordSet.add(t);
+                    t1 = key1 in wordSet
+                    t2 = key2 in wordSet
+                    if cndn==1 and t1==1 and t2==1:
+                        print(w.split('.A')[0])
+                    if cndn==2 and not(t1==0 and t2==0):
+                        print(w.split('.A')[0])
+        
+    def PRGraph(self,cndn,key1,key2):
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            print("The list of documents which satisfy query are : ")
+            for w in doc_list:
+                    temp = w.split(" ")
+                    wordSet={""}
+                    for t in temp:
+                        wordSet.add(t);
+                    t1 = key1 in wordSet
+                    t2 = key2 in wordSet
+                    if cndn==1 and t1==1 and t2==1:
+                        print(w.split('.A')[0])
+                    if cndn==2 and not(t1==0 and t2==0):
+                        print(w.split('.A')[0])
+                        
+                    
+
+
+# In[11]:
+
+
+obj = cran1400()
+# obj1 = cran1400n()
+
+# wT = float(input("Enter weight for Topic Section : "))
+# wA = float(input("Enter weight for Author Section : "))
+# wB = float(input("Enter weight for Background Section : "))
+# wW = float(input("Enter weight for Writing Section : "))
+
+cndn = int(input("Enter 1 for conjunction or 2 for disjunction or 3 for negation : "))
+
+if cndn==1 or cndn==2:
+    key1 = input("Enter first keyword : ")
+    key2 = input("Enter second keyword : ")
+    obj.booleanRet(cndn,key1,key2)
+    obj.PRGraph(cndn,key1,key2)
+#     obj.map(cndn,key1,key2)
+#     obj.zoneScoring(cndn,key1,key2,wT,wA,wB,wW)
+    
+# else:
+#     key1 = input("Enter first keyword : ")
+#     obj1.booleanRet(cndn,key1)
+#     obj1.PRGraph(cndn,key1)
+#     obj1.map(cndn,key1)
+#     obj1.zoneScoring(cndn,key1,wT,wA,wB,wW)
+
+
+
+# obj.files("/Users/anilaswani/Desktop/cran1400.txt",keywords)
+
+
+
+
