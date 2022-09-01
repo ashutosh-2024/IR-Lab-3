@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[12]:
+# In[72]:
 
 
 import re
@@ -17,14 +17,58 @@ from collections import Counter
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 porter = PorterStemmer()
-# nltk.download('stopwords')
-# stop_words=set(stopwords.words("english"))
 
 
-# In[21]:
+# In[ ]:
 
 
 class cran1400:
+    
+    relevant_without_Stemming = []
+    relevant_with_Stemming = []
+    
+    def zoneScoring(self,cndn,wT,wA,wB,wW,tKey,aKey,bKey,wKey):
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            rankDict={}
+            relDocs=1
+            xcoord=[0.0]
+            ycoord=[0.0]
+            relDocsCurrent=0;
+            for w in doc_list:
+                list1 = w.split('.A')
+                topic = list1[0].split(' ')
+                list2 = list1[1].split('.B')
+                author = list2[0].split(' ')
+                list3 = list2[1].split('.W')
+                body = list3[0].split(' ')
+                writing = list3[1].split(' ')
+                
+                wordSetTopic={""}
+                wordSetAuthor={""}
+                wordSetBody={""}
+                wordSetWriting={""}
+                
+                for t in topic:
+                    wordSetTopic.add((t))
+                for t in author:
+                    wordSetAuthor.add((t))
+                for t in body:
+                    wordSetBody.add((t))
+                for t in writing:
+                    wordSetWriting.add((t))
+                
+                t1 = (tKey) in wordSetTopic
+                t2 = (aKey) in wordSetTopic
+                t3 = (bKey) in wordSetTopic
+                t4 = (wKey) in wordSetWriting
+                
+                zoneScore = (t1*wT)+(t2*wA)+(t3*wB)+(t4*wW)
+                rankDict[list1[0]]=zoneScore
+            rankDict = sorted(rankDict.items(), key=lambda d: d[1],reverse=True)
+            print(rankDict)  
+    
     def booleanRet(self,cndn,key1,key2):
         file_name = '/Users/anilaswani/Desktop/cran1400.txt'
         with open(file_name,encoding='utf8') as file:
@@ -33,16 +77,65 @@ class cran1400:
             for w in doc_list:
                     temp = w.split(" ")
                     wordSet={""}
+                    wordSetStem={""}
                     for t in temp:
-                        wordSet.add(t);
+                        wordSet.add(t)
+                    for t in temp:
+                        wordSetStem.add(porter.stem(t))
                     t1 = key1 in wordSet
                     t2 = key2 in wordSet
+                    t3 = porter.stem(key1) in wordSetStem
+                    t4 = porter.stem(key2) in wordSetStem
                     if cndn==1 and t1==1 and t2==1:
+                        self.relevant_without_Stemming.append(w.split('.A')[0])
                         print(w.split('.A')[0])
                     if cndn==2 and not(t1==0 and t2==0):
+                        self.relevant_without_Stemming.append(w.split('.A')[0])
                         print(w.split('.A')[0])
+                    
+                    if cndn==1 and t3==1 and t4==1:
+                        self.relevant_with_Stemming.append(w.split('.A')[0])
+                    if cndn==2 and not(t3==0 and t4==0):
+                        self.relevant_with_Stemming.append(w.split('.A')[0])
+    
+    def MAPWithoutStemming(self):
         
-    def PRGraph(self,cndn,key1,key2):
+        docs_till_now = 0.0
+        relevant_doc = 0.0
+        precision = 0.0
+        
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            for w in doc_list:
+                docs_till_now+=1
+                if (w.split('.A')[0] in self.relevant_without_Stemming):
+                    relevant_doc+=1
+
+                precision+=(relevant_doc/docs_till_now)
+
+                        
+        print('{0:.3f}'.format(precision/1400))
+    
+    def MAPWithStemming(self):
+        docs_till_now = 0.0
+        relevant_doc = 0.0
+        precision = 0.0
+        
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            for w in doc_list:
+                docs_till_now+=1
+                if (w.split('.A')[0] in self.relevant_with_Stemming):
+                    relevant_doc+=1
+
+                precision+=(relevant_doc/docs_till_now)
+
+                        
+        print('{0:.3f}'.format(precision/1400))
+        
+    def PRGraph(self,cndn,key1,key2,titleKey,writingKey):
         file_name = '/Users/anilaswani/Desktop/cran1400.txt'
         with open(file_name,encoding='utf8') as file:
             doc_list = file.read().split(".I")
@@ -111,53 +204,441 @@ class cran1400:
                 xcoord.append(relDocsCurrent/relDocs)
             print("")
             plt.figure("Precision Recall Graph With Stemming is as follows : ")
-            plt.plot(xcoord, ycoord, 'ro')
+            plt.plot(xcoord, ycoord, 'ro') 
             
-                        
-                    
+            
+            relDocs=1
+            xcoord=[0.0]
+            ycoord=[0.0]
+            relDocsCurrent=0;
+            for w in doc_list:
+                list1 = w.split('.A')
+                topic = list1[0].split(' ')
+                list2 = list1[1].split('.B')
+                author = list2[0].split(' ')
+                list3 = list2[1].split('.W')
+                body = list3[0].split(' ')
+                writing = list3[1].split(' ')
+                
+                wordSetTopic={""}
+                wordSetAuthor={""}
+                wordSetBody={""}
+                wordSetWriting={""}
+                
+                for t in topic:
+                    wordSetTopic.add((t))
+                for t in author:
+                    wordSetAuthor.add((t))
+                for t in body:
+                    wordSetBody.add((t))
+                for t in writing:
+                    wordSetWriting.add((t))
+                
+                t1 = (titleKey) in wordSetTopic
+                t2 = (writingKey) in wordSetWriting
+                if cndn==1 and t1==1 and t2==1:
+                    relDocs=relDocs+1
+                if cndn==2 and not(t1==0 and t2==0):
+                    relDocs=relDocs+1
+            i=1
+            for w in doc_list:
+                list1 = w.split('.A')
+                topic = list1[0].split(' ')
+                list2 = list1[1].split('.B')
+                author = list2[0].split(' ')
+                list3 = list2[1].split('.W')
+                body = list3[0].split(' ')
+                writing = list3[1].split(' ')
+                
+                wordSetTopic={""}
+                wordSetAuthor={""}
+                wordSetBody={""}
+                wordSetWriting={""}
+                
+                for t in topic:
+                    wordSetTopic.add((t))
+                for t in author:
+                    wordSetAuthor.add((t))
+                for t in body:
+                    wordSetBody.add((t))
+                for t in writing:
+                    wordSetWriting.add((t))
+                
+                t1 = (titleKey) in wordSetTopic
+                t2 = (writingKey) in wordSetWriting
+                if cndn==1 and t1==1 and t2==1:
+                    relDocsCurrent=relDocsCurrent+1
+                if cndn==2 and not(t1==0 and t2==0):
+                    relDocsCurrent=relDocsCurrent+1
+                ycoord.append(relDocsCurrent/i)
+                i=i+1
+                xcoord.append(relDocsCurrent/relDocs)
+            print("")
+            plt.figure("Precision Recall Graph for Zone indexes for title and body text fields : ")
+            plt.plot(xcoord, ycoord, 'ro')
+
+
+# In[74]:
+
+
+obj = cran1400()
+
+
+# In[36]:
+
+
+cndn = int(input("Enter 1 for conjunction or 2 for disjunction or 3 for negation : "))
+
+
+# In[38]:
+
+
+if cndn==1 or cndn==2:
+    
+    #taking two input keywords
+    key1 = input("Enter first keyword : ")
+    key2 = input("Enter second keyword : ")
+    obj.booleanRet(cndn,key1,key2)
+
+
+# In[27]:
+
+
+if cndn==1 or cndn==2:
+    #taking input for plotting Precision - Recall graph with the zones
+    key1 = input("Enter first keyword : ")
+    key2 = input("Enter second keyword : ")
+    titleKey = input("What would you like to search in title : ")
+    writingKey = input("What would you like to search in text body : ")
+    obj.PRGraph(cndn,key1,key2,titleKey,writingKey)
 
 
 # In[24]:
 
 
-obj = cran1400()
-# obj1 = cran1400n()
+if cndn==1 or cndn==2:
+    key1 = input("Enter first keyword : ")
+    key2 = input("Enter second keyword : ")
+    obj.booleanRet(cndn,key1,key2)
+    obj.MAPWithStemming()
 
-# wT = float(input("Enter weight for Topic Section : "))
-# wA = float(input("Enter weight for Author Section : "))
-# wB = float(input("Enter weight for Background Section : "))
-# wW = float(input("Enter weight for Writing Section : "))
 
-cndn = int(input("Enter 1 for conjunction or 2 for disjunction or 3 for negation : "))
+# In[18]:
+
 
 if cndn==1 or cndn==2:
     key1 = input("Enter first keyword : ")
     key2 = input("Enter second keyword : ")
     obj.booleanRet(cndn,key1,key2)
-    obj.PRGraph(cndn,key1,key2)
-#     obj.map(cndn,key1,key2)
-#     obj.zoneScoring(cndn,key1,key2,wT,wA,wB,wW)
+    obj.MAPWithoutStemming()
+
+
+# In[28]:
+
+
+if cndn==1 or cndn==2:
+    #taking input for the weights to be given to each section
+    wT = float(input("Enter weight for Title Section : "))
+    wA = float(input("Enter weight for Author Section : "))
+    wB = float(input("Enter weight for Background Section : "))
+    wW = float(input("Enter weight for Writing Section : "))
     
-# else:
-#     key1 = input("Enter first keyword : ")
-#     obj1.booleanRet(cndn,key1)
-#     obj1.PRGraph(cndn,key1)
-#     obj1.map(cndn,key1)
-#     obj1.zoneScoring(cndn,key1,wT,wA,wB,wW)
+    #taking input for keywords to be searched in each section
+    tKey = input("What would you like to search in title zone: ")
+    aKey = input("What would you like to search in author zone : ")
+    bKey = input("What would you like to search in background zone : ")
+    wKey = input("What would you like to search in writing zone : ")
+    #calling the zone scoring function which will return the ranked list of documents based on zone score
+    obj.zoneScoring(cndn,wT,wA,wB,wW,tKey,aKey,bKey,wKey)
 
 
-
-# obj.files("/Users/anilaswani/Desktop/cran1400.txt",keywords)
-
-
-# In[ ]:
+# In[6]:
 
 
+class cran1400n:
+    relevant_without_Stemming = []
+    relevant_with_Stemming = []
+    
+    def zoneScoring(self,cndn,wT,wA,wB,wW,tKey,aKey,bKey,wKey):
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            rankDict={}
+            relDocs=1
+            xcoord=[0.0]
+            ycoord=[0.0]
+            relDocsCurrent=0;
+            for w in doc_list:
+                list1 = w.split('.A')
+                topic = list1[0].split(' ')
+                list2 = list1[1].split('.B')
+                author = list2[0].split(' ')
+                list3 = list2[1].split('.W')
+                body = list3[0].split(' ')
+                writing = list3[1].split(' ')
+                
+                wordSetTopic={""}
+                wordSetAuthor={""}
+                wordSetBody={""}
+                wordSetWriting={""}
+                
+                for t in topic:
+                    wordSetTopic.add((t))
+                for t in author:
+                    wordSetAuthor.add((t))
+                for t in body:
+                    wordSetBody.add((t))
+                for t in writing:
+                    wordSetWriting.add((t))
+                
+                t1 = not((tKey) in wordSetTopic)
+                t2 = not((aKey) in wordSetTopic)
+                t3 = not((bKey) in wordSetTopic)
+                t4 = not((wKey) in wordSetWriting)
+                
+                zoneScore = (t1*wT)+(t2*wA)+(t3*wB)+(t4*wW)
+                rankDict[list1[0]]=zoneScore
+            rankDict = sorted(rankDict.items(), key=lambda d: d[1],reverse=True)
+            print(rankDict)  
+    
+    def booleanRet(self,cndn,key1):
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            print("The list of documents which satisfy query are as follows : ")
+            for w in doc_list:
+                    temp = w.split(" ")
+                    wordSet={""}
+                    for t in temp:
+                        wordSet.add(t)
+                    wordSet1={""}
+                    for t in temp:
+                        wordSet1.add(t)
+                    t1 = key1 in wordSet
+                    t3 = porter.stem(key1) in wordSet1
+                    if t1==0:
+                        self.relevant_without_Stemming.append(w.split('.A')[0])
+                        print(w.split('.A')[0])
+                    if t3==0:
+                        self.relevant_with_Stemming.append(w.split('.A')[0])
+    
+    def MAPWithoutStemming(self):
+        
+        docs_till_now = 0.0
+        relevant_doc = 0.0
+        precision = 0.0
+        
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            for w in doc_list:
+                docs_till_now+=1
+                if (w.split('.A')[0] in self.relevant_without_Stemming):
+                    relevant_doc+=1
+
+                precision+=(relevant_doc/docs_till_now)
+
+                        
+        print(precision/1400)
+    
+    def MAPWithStemming(self):
+        docs_till_now = 0.0
+        relevant_doc = 0.0
+        precision = 0.0
+        
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            for w in doc_list:
+                docs_till_now+=1
+                if (w.split('.A')[0] in self.relevant_with_Stemming):
+                    relevant_doc+=1
+
+                precision+=(relevant_doc/docs_till_now)
+
+                        
+        print(precision/1400)
+        
+    def PRGraph(self,cndn,key1,titleKey,writingKey):
+        file_name = '/Users/anilaswani/Desktop/cran1400.txt'
+        with open(file_name,encoding='utf8') as file:
+            doc_list = file.read().split(".I")
+            relDocs=1
+            xcoord=[0.0]
+            ycoord=[0.0]
+            relDocsCurrent=0;
+            for w in doc_list:
+                temp = w.split(" ")
+                wordSet={""}
+                for t in temp:
+                    wordSet.add(t)
+                t1 = key1 in wordSet
+                if t1==0:
+                    relDocs=relDocs+1
+            i=1
+            for w in doc_list:
+                temp = w.split(" ")
+                wordSet={""}
+                for t in temp:
+                    wordSet.add(t)
+                t1 = key1 in wordSet
+                if t1==0:
+                    relDocsCurrent=relDocsCurrent+1
+                ycoord.append(relDocsCurrent/i)
+                i=i+1
+                xcoord.append(relDocsCurrent/relDocs)
+            plt.figure("Precision Recall Graph Without Stemming is as follows : ")
+            plt.plot(xcoord, ycoord, 'ro')
+            
+            relDocs=1
+            xcoord=[0.0]
+            ycoord=[0.0]
+            relDocsCurrent=0;
+            for w in doc_list:
+                temp = w.split(" ")
+                wordSet={""}
+                for t in temp:
+                    wordSet.add(porter.stem(t))
+                t1 = porter.stem(key1) in wordSet
+                if t1==0:
+                    relDocs=relDocs+1
+            i=1
+            for w in doc_list:
+                temp = w.split(" ")
+                wordSet={""}
+                for t in temp:
+                    wordSet.add(porter.stem(t))
+                t1 = porter.stem(key1) in wordSet
+                if t1==0:
+                    relDocsCurrent=relDocsCurrent+1
+                ycoord.append(relDocsCurrent/i)
+                i=i+1
+                xcoord.append(relDocsCurrent/relDocs)
+            print("")
+            plt.figure("Precision Recall Graph With Stemming is as follows : ")
+            plt.plot(xcoord, ycoord, 'ro') 
+            
+            
+            relDocs=1
+            xcoord=[0.0]
+            ycoord=[0.0]
+            relDocsCurrent=0;
+            for w in doc_list:
+                list1 = w.split('.A')
+                topic = list1[0].split(' ')
+                list2 = list1[1].split('.B')
+                author = list2[0].split(' ')
+                list3 = list2[1].split('.W')
+                body = list3[0].split(' ')
+                writing = list3[1].split(' ')
+                
+                wordSetTopic={""}
+                wordSetAuthor={""}
+                wordSetBody={""}
+                wordSetWriting={""}
+                
+                for t in topic:
+                    wordSetTopic.add((t))
+                for t in author:
+                    wordSetAuthor.add((t))
+                for t in body:
+                    wordSetBody.add((t))
+                for t in writing:
+                    wordSetWriting.add((t))
+                
+                t1 = (titleKey) in wordSetTopic
+                t2 = (writingKey) in wordSetWriting
+                if t1==0 and t2==0:
+                    relDocs=relDocs+1
+            i=1
+            for w in doc_list:
+                list1 = w.split('.A')
+                topic = list1[0].split(' ')
+                list2 = list1[1].split('.B')
+                author = list2[0].split(' ')
+                list3 = list2[1].split('.W')
+                body = list3[0].split(' ')
+                writing = list3[1].split(' ')
+                
+                wordSetTopic={""}
+                wordSetAuthor={""}
+                wordSetBody={""}
+                wordSetWriting={""}
+                
+                for t in topic:
+                    wordSetTopic.add((t))
+                for t in author:
+                    wordSetAuthor.add((t))
+                for t in body:
+                    wordSetBody.add((t))
+                for t in writing:
+                    wordSetWriting.add((t))
+                
+                t1 = (titleKey) in wordSetTopic
+                t2 = (writingKey) in wordSetWriting
+                if t1==0 and t2==0:
+                    relDocsCurrent=relDocsCurrent+1
+                ycoord.append(relDocsCurrent/i)
+                i=i+1
+                xcoord.append(relDocsCurrent/relDocs)
+            print("")
+            plt.figure("Precision Recall Graph for Zone indexes for title and body text fields : ")
+            plt.plot(xcoord, ycoord, 'ro')
 
 
-
-# In[ ]:
-
+# In[7]:
 
 
+obj1 = cran1400n()
+cndn = int(input("Enter 1 for conjunction or 2 for disjunction or 3 for negation : "))
 
+
+# In[77]:
+
+
+if cndn==3:
+    key1 = input("Enter first keyword : ")
+    obj1.booleanRet(cndn,key1)
+
+
+# In[79]:
+
+
+if cndn==3:
+    titleKey = input("What would you like to search in title : ")
+    writingKey = input("What would you like to search in text body : ")
+    obj1.PRGraph(cndn,key1,titleKey,writingKey)
+
+
+# In[63]:
+
+
+if cndn==3:
+    obj1.booleanRet(cndn,key1)
+    obj1.MAPWithStemming()
+
+
+# In[65]:
+
+
+if cndn==3:
+    obj1.booleanRet(cndn,key1)
+    obj1.MAPWithoutStemming()
+
+
+# In[9]:
+
+
+if cndn==3:
+    wT = float(input("Enter weight for Title Section : "))
+    wA = float(input("Enter weight for Author Section : "))
+    wB = float(input("Enter weight for Background Section : "))
+    wW = float(input("Enter weight for Writing Section : "))
+    
+    #taking input for keywords to be searched in each section
+    tKey = input("What would you like to not search in title zone: ")
+    aKey = input("What would you like to not search in author zone : ")
+    bKey = input("What would you like to not search in background zone : ")
+    wKey = input("What would you like to not search in writing zone : ")
+    
+    obj1.zoneScoring(cndn,wT,wA,wB,wW,tKey,aKey,bKey,wKey)
